@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, Search, Send } from "lucide-react";
 
@@ -21,7 +21,7 @@ import cityImage from "@/assets/quiet-city.jpg";
 const novelSynopsis =
   "Across the shifting boundaries of belonging, inherited values meet the convictions of a new cultural landscape. A radicalized young man believes he is pursuing righteousness—until ethical dilemmas, human relationships, and the ordinary tenderness of life begin to challenge what he holds true.";
 
-function TextLink({ to, children, light = false }: { to: string; children: React.ReactNode; light?: boolean }) {
+function TextLink({ to, children, light = false }: { to: string; children: ReactNode; light?: boolean }) {
   return (
     <Button asChild variant={light ? "editorialLight" : "editorial"} size="lg" className="editorial-cta">
       <Link to={to}>{children}<ArrowRight aria-hidden="true" /></Link>
@@ -36,7 +36,7 @@ function PageIntro({
   number,
 }: {
   eyebrow: string;
-  title: React.ReactNode;
+  title: ReactNode;
   description: string;
   number: string;
 }) {
@@ -52,7 +52,7 @@ function PageIntro({
   );
 }
 
-function SectionLabel({ number, children }: { number: string; children: React.ReactNode }) {
+function SectionLabel({ number, children }: { number: string; children: ReactNode }) {
   return <span className="section-label"><span>{number}</span>{children}</span>;
 }
 
@@ -263,8 +263,8 @@ export function BlogPage() {
 
 export function ArticlePage({ slug }: { slug: string }) {
   const article = articles.find((entry) => entry.slug === slug);
-  if (!article) return <PageIntro eyebrow="THE JOURNAL" title={<>The story<br /><em>isn't here.</em></>} description="That journal entry could not be found." number="04" />;
   const [copied, setCopied] = useState(false);
+  if (!article) return <PageIntro eyebrow="THE JOURNAL" title={<>The story<br /><em>isn't here.</em></>} description="That journal entry could not be found." number="04" />;
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -332,17 +332,20 @@ export function DonationPage() {
 }
 
 export function ContactPage() {
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(false);
+    if (!event.currentTarget.checkValidity()) {
+      event.currentTarget.reportValidity();
+      setError("Complete each field with a valid name, email address, subject, and message.");
+      return;
+    }
     setError("This form is not connected to an email service, so your message was not sent. Please use the email address provided.");
   };
   return (
     <>
       <PageIntro eyebrow="CONTACT" title={<>A note is always<br /><em>worth sending.</em></>} description="For questions or correspondence, choose the direct contact option below." number="08" />
-      <section className="contact-layout editorial-page-width"><div className="contact-info"><SectionLabel number="01">DIRECT CONTACT</SectionLabel><h2>Reach out<br /><em>to the author.</em></h2><p>For correspondence, use the email or phone number listed here. The contact form is a preview and cannot currently deliver messages.</p><div className="contact-detail"><span>EMAIL</span><a href="mailto:aassaassi@gmail.com">aassaassi@gmail.com <ArrowUpRight aria-hidden="true" /></a></div><div className="contact-detail"><span>PHONE</span><a href="tel:5132406471">5132406471 <ArrowUpRight aria-hidden="true" /></a></div><span className="contact-private-note">The phone number is shown exactly as provided; no country code has been assumed.</span></div><form className="contact-form" onSubmit={handleSubmit} noValidate><SectionLabel number="02">SEND A MESSAGE</SectionLabel><div className="form-field"><label htmlFor="contact-name">Full name</label><Input id="contact-name" name="name" required autoComplete="name" placeholder="Your name" onChange={() => setError("")} /></div><div className="form-field"><label htmlFor="contact-email">Email address</label><Input id="contact-email" name="email" type="email" required autoComplete="email" placeholder="you@example.com" onChange={() => setError("")} /></div><div className="form-field"><label htmlFor="contact-subject">Subject</label><Input id="contact-subject" name="subject" required placeholder="What would you like to discuss?" onChange={() => setError("")} /></div><div className="form-field"><label htmlFor="contact-message">Message</label><Textarea id="contact-message" name="message" required rows={5} placeholder="Write your message…" onChange={() => setError("")} /></div>{error && <p className="form-error" role="alert">{error}</p>}{submitted && <p className="form-note" role="status">Message sent.</p>}<Button type="submit" variant="editorial" size="lg" className="editorial-cta">Send a message <Send aria-hidden="true" /></Button><span className="form-note">This preview does not store or transmit form details.</span></form></section>
+      <section className="contact-layout editorial-page-width"><div className="contact-info"><SectionLabel number="01">DIRECT CONTACT</SectionLabel><h2>Reach out<br /><em>to the author.</em></h2><p>For correspondence, use the email or phone number listed here. The contact form is a preview and cannot currently deliver messages.</p><div className="contact-detail"><span>EMAIL</span><a href="mailto:aassaassi@gmail.com">aassaassi@gmail.com <ArrowUpRight aria-hidden="true" /></a></div><div className="contact-detail"><span>PHONE</span><a href="tel:5132406471">5132406471 <ArrowUpRight aria-hidden="true" /></a></div><span className="contact-private-note">The phone number is shown exactly as provided; no country code has been assumed.</span></div><form className="contact-form" onSubmit={handleSubmit} noValidate><SectionLabel number="02">SEND A MESSAGE</SectionLabel><div className="form-field"><label htmlFor="contact-name">Full name</label><Input id="contact-name" name="name" required autoComplete="name" placeholder="Your name" onChange={() => setError("")} /></div><div className="form-field"><label htmlFor="contact-email">Email address</label><Input id="contact-email" name="email" type="email" required autoComplete="email" placeholder="you@example.com" onChange={() => setError("")} /></div><div className="form-field"><label htmlFor="contact-subject">Subject</label><Input id="contact-subject" name="subject" required placeholder="What would you like to discuss?" onChange={() => setError("")} /></div><div className="form-field"><label htmlFor="contact-message">Message</label><Textarea id="contact-message" name="message" required rows={5} placeholder="Write your message…" onChange={() => setError("")} /></div>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" variant="editorial" size="lg" className="editorial-cta">Send a message <Send aria-hidden="true" /></Button><span className="form-note">This preview does not store or transmit form details.</span></form></section>
     </>
   );
 }
